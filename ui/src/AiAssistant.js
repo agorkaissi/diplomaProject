@@ -8,17 +8,16 @@ const AiAssistant = () => {
         <div className="container_main">
             <form>
                 <fieldset>
-                    <label htmlFor="nameField">Name</label>
-                    <input type="text" placeholder="CJ Patoilo" id="nameField"/>
-                    <label htmlFor="ageRangeField">Age Range</label>
+                    <label htmlFor="ageRangeField">Choose your AI agent</label>
                     <select id="ageRangeField">
-                        <option value="0-13">0-13</option>
-                        <option value="14-17">14-17</option>
-                        <option value="18-23">18-23</option>
-                        <option value="24+">24+</option>
+                        <option value="AI agent 1">AI agent 1</option>
+                        <option value="AI agent 2">AI agent 2</option>
+                        <option value="AI agent 3">AI agent 3</option>
+                        <option value="AI agent 4">AI agent 4</option>
+                        <option value="AI agent 5">AI agent 5</option>
                     </select>
-                    <label htmlFor="commentField">Comment</label>
-                    <textarea placeholder="Hi CJ …" id="commentField"></textarea>
+                    <label htmlFor="commentField">Please provide How we can help you</label>
+                    <textarea placeholder="Please ask question here" id="commentField" ></textarea>
                     <div className="float-right">
                         <input type="checkbox" id="confirmField"/>
                         <label className="label-inline" htmlFor="confirmField">Send a copy to yourself</label>

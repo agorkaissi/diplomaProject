@@ -171,8 +171,55 @@ footer {
   height: 24px;
   fill: currentColor;
 }
-/* dropdwn choose assistant */
+/* Detail + summary */
+details {
+  padding: 0.25em 0;
+  margin-bottom: 0.5em;
+  cursor: pointer;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+}
 
-.dropdown-box select {
-    width: 100%;
+summary {
+  font-weight: 600;
+  font-size: 1.05em;
+  color: #606c76;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  transition: color 0.3s ease;
+}
+
+summary::before {
+  content: "▸";
+  display: inline-block;
+  width: 1em;
+  margin-right: 0.3em;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+details[open] summary::before {
+  content: "▾";
+  color: #9b4dca;
+}
+
+details[open] summary {
+  color: #9b4dca;
+}
+
+details p {
+  margin: 0.25em 0 0 1.3em;
+  font-size: 0.95em;
+  color: #666;
+
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: max-height 0.35s ease, opacity 0.35s ease, transform 0.35s ease;
+}
+
+details[open] p {
+  max-height: 500px;
+  opacity: 1;
+  transform: translateY(0);
 }
