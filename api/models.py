@@ -10,8 +10,7 @@ class Agent(Base):
     description = Column(Text, nullable=True)
     domain = Column(String(100), nullable=False)
     tags = Column(Text, nullable=False)
-    source_type = Column(String(255), nullable=False)
-
+    docs_path = Column(String(255), nullable=False)
     prompt = Column(Text, nullable=False)
     active = Column(Boolean, nullable=False, default=True)
 

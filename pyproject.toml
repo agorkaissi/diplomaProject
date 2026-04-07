@@ -27,4 +27,6 @@ dependencies = [
     "typing-inspection==0.4.2",
     "uvicorn==0.40.0",
     "sqlalchemy>=2.0.49",
+    "langgraph>=1.1.6",
+    "langchain-ollama>=1.1.0",
 ]
