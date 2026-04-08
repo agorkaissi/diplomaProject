@@ -1,7 +1,7 @@
 import './App.css';
 import {Routes, Route} from "react-router-dom";
 import "milligram";
-import Home from "./Home";
+import Home from "./pages/Home";
 import Layout from "./Layout";
 
 function App() {
