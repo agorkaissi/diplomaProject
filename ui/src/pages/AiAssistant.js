@@ -1,29 +1,82 @@
 import '../App.css';
 import "milligram";
+import {useEffect, useState} from "react";
 
 const AiAssistant = () => {
+    const [agents, setAgents] = useState([]);
+    const [selectedAgent, setSelectedAgent] = useState("");
+    const [question, setQuestion] = useState("");
+    const [response, setResponse] = useState(null);
+
+    useEffect(() => {
+        fetch("/agents")
+            .then((res) => res.json())
+            .then((data) => setAgents(data))
+            .catch((err) => console.error("Error fetching agents:", err));
+    }, []);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        const res = await fetch("/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                question: question,
+                selected_agent: selectedAgent,
+            }),
+        });
+
+        const data = await res.json();
+        setResponse(data);
+    };
 
 
     return (
         <div className="container_main">
-            <form>
+            <form onSubmit={handleSubmit}>
                 <fieldset>
                     <label htmlFor="ageRangeField">Choose your AI agent</label>
-                    <select id="ageRangeField">
-                        <option value="AI agent 1">AI agent 1</option>
-                        <option value="AI agent 2">AI agent 2</option>
-                        <option value="AI agent 3">AI agent 3</option>
-                        <option value="AI agent 4">AI agent 4</option>
-                        <option value="AI agent 5">AI agent 5</option>
+                    <select
+                        id="agentField"
+                        value={selectedAgent}
+                        onChange={(e) => setSelectedAgent(e.target.value)}
+                    >
+                        <option value="">-- Select AI agent --</option>
+                        {agents.map((agent) => (
+                            <option key={agent.id} value={agent.name}>
+                                {agent.name}
+                            </option>
+                        ))}
                     </select>
                     <label htmlFor="commentField">Please provide How we can help you</label>
-                    <textarea placeholder="Please ask question here" id="commentField" ></textarea>
+                    <textarea
+                        id="commentField"
+                        placeholder="Please ask question here"
+                        value={question}
+                        onChange={(e) => setQuestion(e.target.value)}
+                    />
                     <div className="float-right">
                         <input type="checkbox" id="confirmField"/>
                         <label className="label-inline" htmlFor="confirmField">Send a copy to yourself</label>
                     </div>
-                    <input className="button-primary" type="submit" value="Send"/>
+                    <input className="button-primary" type="submit" value="ASK"/>
                 </fieldset>
+                {response && (
+                    <div>
+                        {response && (
+                            <>
+                                <h4>Agent: {response.agent} Response</h4>
+                                <p>{response.answer}</p>
+
+                                <h4>Only for debug purpose (json):</h4>
+                                <pre>{JSON.stringify(response, null, 2)}</pre>
+                            </>
+                        )}
+                    </div>
+                )}
             </form>
 
         </div>

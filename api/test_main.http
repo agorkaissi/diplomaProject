@@ -31,6 +31,18 @@ Accept: application/json
 }
 
 ###
+# Create agent test
+POST http://127.0.0.1:8000/agents
+Accept: application/json
+
+{
+    "name": "Frodo",
+    "description": "LordsOfTheRings",
+    "docs_path": "data/lotr",
+    "prompt": "You are LordsOfTheRings assistant",
+    "active" : true
+}
+###
 # GET agent test
 GET http://127.0.0.1:8000/agents
 Accept: application/json

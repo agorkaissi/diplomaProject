@@ -5,25 +5,34 @@ diplomaProject
 TBD
 
 # Technologies Used
-- Python 3.14
+- Python 3.12
 - FastAPI
-- HTML / CSS (optional)
+- HTML / CSS
 - uv python env
+- Ollama 
 
 # Requirements
-- python: 3.14.1
+- python: 3.12
 - uv: 0.9.28
 - node.js: v24.13.0
 - Ollama client 
+- llama3.2:1b model
 
 # Project Structure
 ```
 diplomaProject/
 │
 ├── api/
-│   ├── main.py
+│   ├── data/
+│   │   ├── hogwart/
+│   │   └── hr/
+│   │
+│   ├── .gitingore
+│   ├── agents.db
 │   ├── db.py
+│   ├── main.py
 │   ├── models.py
+│   ├── ollama_client.py
 │   ├── runtime.py
 │   ├── schemas.py
 │   └── test_main.http
@@ -35,6 +44,12 @@ diplomaProject/
 │   │   └── robots.txt
 │   │ 
 │   └── src
+│       └── pages/
+│       │   ├── AiAssistant.js
+│       │   ├── Dashboard.js
+│       │   ├── Home.js
+│       │   └── Scenarios.js
+│       │
 │       ├── App.css
 │       ├── App.js
 │       ├── App.test.js

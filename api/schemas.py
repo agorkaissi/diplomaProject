@@ -19,6 +19,7 @@ class AgentUpdate(BaseModel):
 
 class AgentResponse(BaseModel):
     id: int
+    name: str
 
     model_config = ConfigDict(from_attributes=True)
 
