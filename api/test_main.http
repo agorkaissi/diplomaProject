@@ -4,5 +4,56 @@
 GET http://127.0.0.1:8000/healthcheck
 Accept: application/json
 
+###
 # Create agent test
+POST http://127.0.0.1:8000/agents
+Accept: application/json
+
+{
+    "name": "hr",
+    "description": "HR assistant",
+    "docs_path": "data/hr",
+    "prompt": "You are an HR assistant",
+    "active" : true
+}
+
+###
+# Create agent test
+POST http://127.0.0.1:8000/agents
+Accept: application/json
+
+{
+    "name": "HarryPotter",
+    "description": "Hogwart",
+    "docs_path": "data/hogwart",
+    "prompt": "You are an Harry Potter assistant",
+    "active" : true
+}
+
+###
+# GET agent test
+GET http://127.0.0.1:8000/agents
+Accept: application/json
+
+###
+# POST chat test
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+    "question": "How many days Each worker needs to have?",
+    "selected_agent":"hr"
+}
+
+###
+# POST chat test
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+    "question": "What four houses called?",
+    "selected_agent":"HarryPotter"
+}
 

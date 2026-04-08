@@ -4,19 +4,15 @@ from pydantic import BaseModel, ConfigDict, Field
 class AgentBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     description: Optional[str] = None
-    domain: str = Field(..., min_length=1, max_length=100)
-    tags: Optional[List[str]] = None
     docs_path: str = Field(..., min_length=1, max_length=255)
     prompt: str = Field(..., min_length=1)
     active: bool = True
 
-class Agent(AgentBase):
+class AgentCreate(AgentBase):
     pass
 
 class AgentUpdate(BaseModel):
     description: Optional[str] = None
-    domain: Optional[str] = Field(default=None, max_length=100)
-    tags: Optional[str] = None
     docs_path: Optional[str] = Field(default=None, max_length=255)
     prompt: Optional[str] = None
     active: Optional[bool] = None

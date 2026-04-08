@@ -14,6 +14,7 @@ TBD
 - python: 3.14.1
 - uv: 0.9.28
 - node.js: v24.13.0
+- Ollama client 
 
 # Project Structure
 ```
@@ -21,7 +22,10 @@ diplomaProject/
 │
 ├── api/
 │   ├── main.py
-│   ├── requirements.txt
+│   ├── db.py
+│   ├── models.py
+│   ├── runtime.py
+│   ├── schemas.py
 │   └── test_main.http
 │ 
 ├── ui/   
@@ -44,7 +48,6 @@ diplomaProject/
 │
 ├── .dockerignore
 ├── .gitignore   
-├── Dockerfile  
 ├── pyproject.toml
 ├── README.md
 └── uv.lock

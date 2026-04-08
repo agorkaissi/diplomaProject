@@ -1,8 +1,8 @@
 [project]
-name = "systemai"
+name = "diplomaProject"
 version = "0.1.0"
 description = "Add your description here"
-requires-python = ">=3.14"
+requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.128.0",
     "joblib>=1.5.3",
@@ -29,4 +29,6 @@ dependencies = [
     "sqlalchemy>=2.0.49",
     "langgraph>=1.1.6",
     "langchain-ollama>=1.1.0",
+    "router>=0.1",
+    "pip-check-reqs>=2.5.6",
 ]
