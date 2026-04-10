@@ -38,7 +38,7 @@ const AiAssistant = () => {
         <div className="container_main">
             <form onSubmit={handleSubmit}>
                 <fieldset>
-                    <label htmlFor="ageRangeField">Choose your AI agent</label>
+                    <label htmlFor="agentField">Choose your AI agent</label>
                     <select
                         id="agentField"
                         value={selectedAgent}
@@ -66,15 +66,11 @@ const AiAssistant = () => {
                 </fieldset>
                 {response && (
                     <div>
-                        {response && (
-                            <>
                                 <h4>Agent: {response.agent} Response</h4>
                                 <p>{response.answer}</p>
 
                                 <h4>Only for debug purpose (json):</h4>
                                 <pre>{JSON.stringify(response, null, 2)}</pre>
-                            </>
-                        )}
                     </div>
                 )}
             </form>

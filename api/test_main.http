@@ -14,7 +14,9 @@ Accept: application/json
     "description": "HR assistant",
     "docs_path": "data/hr",
     "prompt": "You are an HR assistant",
-    "active" : true
+    "agent_type": "specialist",
+    "active" : true,
+    "connected_agent_ids":[]
 }
 
 ###
@@ -27,7 +29,9 @@ Accept: application/json
     "description": "Hogwart",
     "docs_path": "data/hogwart",
     "prompt": "You are an Harry Potter assistant",
-    "active" : true
+    "agent_type": "specialist",
+    "active" : true,
+    "connected_agent_ids":[]
 }
 
 ###
@@ -40,8 +44,26 @@ Accept: application/json
     "description": "LordsOfTheRings",
     "docs_path": "data/lotr",
     "prompt": "You are LordsOfTheRings assistant",
-    "active" : true
+    "agent_type": "specialist",
+    "active" : true,
+    "connected_agent_ids":[]
 }
+
+###
+# Create agent test
+POST http://127.0.0.1:8000/agents
+Accept: application/json
+
+{
+    "name": "Czytelnik",
+    "description": "Zna wszystkie ksiazki",
+    "docs_path": "data/supervisor",
+    "prompt": "You are Czytelnik assistant",
+    "agent_type": "supervisor",
+    "active" : true,
+    "connected_agent_ids":[2,3]
+}
+
 ###
 # GET agent test
 GET http://127.0.0.1:8000/agents
@@ -59,7 +81,7 @@ Accept: application/json
 }
 
 ###
-# POST chat test
+# POST chat test specialist
 POST http://127.0.0.1:8000/chat
 Content-Type: application/json
 Accept: application/json
@@ -68,4 +90,16 @@ Accept: application/json
     "question": "What four houses called?",
     "selected_agent":"HarryPotter"
 }
+
+###
+# POST chat test supervisor
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+    "question": "What four houses called?",
+    "selected_agent":"Czytelnik2"
+}
+
 

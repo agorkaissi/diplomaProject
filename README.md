@@ -25,7 +25,9 @@ diplomaProject/
 ├── api/
 │   ├── data/
 │   │   ├── hogwart/
-│   │   └── hr/
+│   │   ├── hr/
+│   │   ├── lotr/
+│   │   └── supervisor/
 │   │
 │   ├── .gitingore
 │   ├── agents.db
@@ -86,6 +88,13 @@ uv sync
 ```
 cd diplomaProject/ui
 npm install
+```
+3. Prepare Ollama client 
+- download and install ollama client from: https://ollama.com/download
+```
+ollama list
+ollama pull llama3.2:1b
+ollama run llama3.2:1b
 ```
 
 ## Running the Application

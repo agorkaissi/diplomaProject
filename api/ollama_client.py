@@ -7,7 +7,7 @@ llm = ChatOllama(
     model=OLLAMA_MODEL,
     base_url=OLLAMA_BASE_URL,
     temperature=0,
-
+    timeout=10,
 )
 
 def generate_answer(prompt: str) -> str:
