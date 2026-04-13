@@ -3,15 +3,21 @@ from sqlalchemy.orm import Session
 from models import Agent, AgentLink
 from ollama_client import generate_answer
 
-def load_documents(folder:str) ->list[tuple[str,str]]:
+DOCUMENT_CACHE = {}
+
+def load_documents(folder: str) -> list[tuple[str, str]]:
+    if folder in DOCUMENT_CACHE:
+        return DOCUMENT_CACHE[folder]
+
     path = Path(folder)
     path.mkdir(parents=True, exist_ok=True)
 
-    documents: list[tuple[str,str]] = []
+    documents: list[tuple[str, str]] = []
     for file in path.glob("*.txt"):
         content = file.read_text(encoding="utf-8", errors="ignore")
         documents.append((file.name, content))
 
+    DOCUMENT_CACHE[folder] = documents
     return documents
 
 def retrieve_relevant_documents(
@@ -23,10 +29,13 @@ def retrieve_relevant_documents(
     scored_documents: list[tuple[int,str,str]] = []
 
     for file_name, content in documents:
-        content = content.lower()
-        score = sum(1 for word in question_words if word in content.lower())
+        content_lower = content.lower()
+        score = sum(1 for word in question_words if word in content_lower)
         if score > 0:
             scored_documents.append((score, file_name, content))
+
+    if not scored_documents:
+        scored_documents = [(0, name, content) for name, content in documents[:top_k]]
 
     scored_documents.sort(key=lambda item: item[0], reverse=True)
     return [
@@ -79,8 +88,8 @@ def run_specialist_agent(question:str, agent) -> tuple[str, list[str]]:
         return "I don't know based on the provided documents", []
 
     context = "\n\n---\n\n".join(
-        f"[source: {file_name}]\n{content}"
-        for file_name , content in relevant_documents
+        f"[{file_name}]\n{content[:800]}"
+        for file_name, content in relevant_documents
     )
 
     prompt = build_specialist_prompt(
@@ -94,11 +103,11 @@ def run_specialist_agent(question:str, agent) -> tuple[str, list[str]]:
     return answer, sources
 
 def run_supervisor_agent(
-        question:str,
-        agent: Agent,
-        db: Session,
-        visited: set[int],
+    question: str,
+    agent: Agent,
+    db: Session,
 ) -> tuple[str, list[str]]:
+
     links = (
         db.query(AgentLink)
         .filter(
@@ -112,73 +121,89 @@ def run_supervisor_agent(
     if not links:
         return "No connected agents are configured for this supervisor", []
 
-    useful_child_answers: list[str] = []
-    collected_sources: list[str] = []
-
-    for link in links:
-        child_agent = (
+    if len(links) == 1:
+        child = (
             db.query(Agent)
             .filter(
-                Agent.id == link.child_agent_id,
+                Agent.id == links[0].child_agent_id,
                 Agent.active.is_(True),
             )
             .first()
         )
 
-        if not child_agent:
-            continue
+        if not child:
+            return "Child agent not found", []
 
-        child_answer, child_sources = _run_agent(
+        context, sources = run_specialist_retrieval_only(question, child)
+
+        if not context.strip() and not sources:
+            return "I don't know based on the provided agent answers.", []
+
+        prompt = build_supervisor_prompt(
+            agent_prompt=agent.prompt,
             question=question,
-            agent=child_agent,
-            db=db,
-            visited=visited.copy(),
+            child_answers=f"[{child.name}]\n{context}",
         )
 
-        if child_answer and not is_unknown_answer(child_answer):
-            useful_child_answers.append(
-                f"[Agent:{child_agent.name}]\n{child_answer}"
-            )
+        final_answer = generate_answer(prompt)
+        return final_answer, sources
+
+    child_agents = (
+        db.query(Agent)
+        .filter(
+            Agent.id.in_([l.child_agent_id for l in links]),
+            Agent.active.is_(True),
+        )
+        .all()
+    )
+
+    child_map = {a.id: a for a in child_agents}
+
+    useful_child_answers: list[str] = []
+    collected_sources: list[str] = []
+
+    for link in links:
+        child = child_map.get(link.child_agent_id)
+        if not child:
+            continue
+
+        context, sources = run_specialist_retrieval_only(
+            question=question,
+            agent=child,
+        )
+
+        useful_child_answers.append(
+            f"[{child.name}]\n{context}"
+        )
 
         collected_sources.extend(
-            [f"{child_agent.name}:{source}" for source in child_sources]
+            [f"{child.name}:{s}" for s in sources]
         )
 
     if not useful_child_answers:
         return "I don't know based on the provided agent answers.", []
 
-    if len(useful_child_answers) == 1:
-        return useful_child_answers[0], collected_sources
-
     prompt = build_supervisor_prompt(
         agent_prompt=agent.prompt,
-        question =question,
+        question=question,
         child_answers="\n\n---\n\n".join(useful_child_answers),
     )
 
     final_answer = generate_answer(prompt)
+
     return final_answer, collected_sources
 
 def _run_agent(
         question: str,
         agent: Agent,
         db: Session,
-        visited : set[int] | None = None,
 ) -> tuple[str, list[str]]:
-    if visited is None:
-        visited = set()
-
-    if agent.id in visited:
-        return f"Cycle detected for agent'{agent.name}' .", []
-
-    visited.add(agent.id)
 
     if agent.agent_type == "supervisor":
         return run_supervisor_agent(
             question = question,
             agent=agent,
             db=db,
-            visited=visited,
         )
 
     return run_specialist_agent(question=question, agent=agent)
@@ -188,5 +213,20 @@ def run_agent(question: str, agent: Agent, db: Session) -> tuple[str, list[str]]
         question=question,
         agent=agent,
         db=db,
-        visited=set(),
     )
+
+def run_specialist_retrieval_only(question: str, agent) -> tuple[str, list[str]]:
+    documents = load_documents(agent.docs_path)
+    relevant_documents = retrieve_relevant_documents(question, documents)
+
+    if not relevant_documents:
+        return "", []
+
+    context = "\n\n---\n\n".join(
+        f"[source: {file_name}]\n{content}"
+        for file_name, content in relevant_documents
+    )
+
+    sources = [file_name for file_name, _ in relevant_documents]
+
+    return context, sources
