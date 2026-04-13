@@ -1,29 +1,35 @@
 import '../App.css';
 import "milligram";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
-
+    const navigate = useNavigate();
 
     return (
         <div className="container_main">
-            <div className="dashboard_view">
-                To do - implement on dashboard MVP: <br />
-                1. Agents overview: <br />
-                    - list of agents <br />
-                    - status of agents <br />
-                    - activity <br />
-                    - numbers of questions asked? <br />
-                2. Agent configuration:<br />
-                    - add <br />
-                    - remove (put on hold) <br />
-                    - edit? <br />
-                3. Chat logs: <br />
-                    - history of chats with agents <br />
-                4. Monitoring & observability: <br />
-                    - numer of asks per agent<br />
-                    - time of response<br />
-                    - CPU/GPU
-                    - response time
+            <div className="dashboard">
+                <div className="tile" onClick={() => navigate("/agentsOverview")}>
+                    <h5>Agents</h5>
+                    <h5>Overview</h5>
+                </div>
+
+                <div className="tile" onClick={() => navigate("/agentsConfiguration")}>
+                    <h5>Agents</h5>
+                    <h5>Configuration</h5>
+                </div>
+
+                <div className="tile">
+                    <h5>Chat</h5>
+                    <h5>Logs</h5>
+                </div>
+
+                <div className="tile">Monitoring</div>
+                <div className="tile">Performance</div>
+                <div className="tile">FunctionA</div>
+
+                <div className="tile">FunctionB</div>
+                <div className="tile">FunctionC</div>
+                <div className="tile">FunctionD</div>
             </div>
         </div>
     );

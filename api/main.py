@@ -26,9 +26,9 @@ app = FastAPI(
 )
 
 def to_agent_response(agent:Agent) -> AgentResponse:
-    connected_agent_ids =[
+    connected_agent_ids = [
         link.child_agent_id
-        for link in agent.supervisor_links
+        for link in getattr(agent, "supervisor_links", [])
         if link.active
     ]
 

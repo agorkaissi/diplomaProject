@@ -5,6 +5,8 @@ import Home from "./pages/Home";
 import AiAssistant from "./pages/AiAssistant";
 import Dashboard from "./pages/Dashboard";
 import Scenarios from "./pages/Scenarios";
+import AgentsConfiguration from "./pages/dashboard/agentsConfiguration";
+import AgentsOverview from "./pages/dashboard/agentsOverview";
 
 const router = createBrowserRouter([
     {
@@ -25,6 +27,14 @@ const router = createBrowserRouter([
             {
                 path: "/scenarios",
                 element: <Scenarios />
+            },
+            {
+                path: "/agentsConfiguration",
+                element: <AgentsConfiguration />
+            },
+            {
+                path: "/agentsOverview",
+                element: <AgentsOverview />
             }
         ]
     }

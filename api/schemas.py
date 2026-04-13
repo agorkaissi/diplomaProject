@@ -23,6 +23,11 @@ class AgentUpdate(BaseModel):
 class AgentResponse(BaseModel):
     id: int
     name: str
+    description: str
+    docs_path: str
+    prompt: str
+    agent_type: str
+    active: bool
     connected_agent_ids: list[int] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)

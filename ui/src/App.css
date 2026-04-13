@@ -239,3 +239,85 @@ details[open] p {
   flex: 2; /* 2 części */
   padding: 20px;
 }
+
+/* Dashboard view */
+
+:root {
+  --gap: 1.5rem;
+  --radius: 0.4rem;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gap);
+}
+
+.tile {
+  border: 0.1rem solid #9b4dca;
+  border-radius: var(--radius);
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+
+  color: #9b4dca;
+  background-color: transparent;
+
+  transition: all 0.2s ease;
+}
+
+.tile:hover {
+  background-color: #9b4dca;
+  color: #fff;
+  border-color: #9b4dca;
+}
+
+.tile {
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.tile h5 {
+  margin-bottom: 0.5rem;
+}
+
+.tile p {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+/* Dashboard view */
+
+/* Back button*/
+.back-button {
+  border: 0.1rem solid #9b4dca;
+  background: transparent;
+  color: #9b4dca;
+
+  padding: 0.6rem 1.2rem;
+  border-radius: 0.4rem;
+
+  font-size: 1.2rem;
+  font-weight: 500;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.back-button:hover {
+  background: #9b4dca;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.back-button:active {
+  transform: translateY(0px);
+}
+/* back button*/
