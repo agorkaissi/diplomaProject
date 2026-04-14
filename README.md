@@ -47,6 +47,10 @@ diplomaProject/
 │   │ 
 │   └── src
 │       └── pages/
+│       │   ├── dashboard/
+│       │   │   ├── agentsOverview.js
+│       │   │   └── agents.js
+│       │   │ 
 │       │   ├── AiAssistant.js
 │       │   ├── Dashboard.js
 │       │   ├── Home.js

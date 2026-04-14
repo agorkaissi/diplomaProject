@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from db import Base, engine, get_db
 from router import route_with_langgraph
 from runtime import run_agent
@@ -146,9 +147,10 @@ def create_agent(payload: AgentCreate, db: Session = Depends(get_db)):
     agent = db.query(Agent).filter(Agent.id == agent.id).first()
     return to_agent_response(agent)
 
-@app.delete("/agents/{agent_id}")
-def delete_agent(agent_id: int, db: Session = Depends(get_db)):
+@app.patch("/agents/{agent_id}/deactivate")
+def deactivate_agent(agent_id: int, db: Session = Depends(get_db)):
     agent = db.query(Agent).filter(Agent.id == agent_id).first()
+
     if not agent:
         raise HTTPException(
             status_code=404,
@@ -158,12 +160,42 @@ def delete_agent(agent_id: int, db: Session = Depends(get_db)):
     agent.active = False
 
     db.query(AgentLink).filter(
-        (AgentLink.supervisor_agent_id == agent.id)
-        (AgentLink.child_agent_id == agent.id)
+        or_(
+            AgentLink.supervisor_agent_id == agent.id,
+            AgentLink.child_agent_id == agent.id
+        )
     ).update({"active": False}, synchronize_session=False)
+
     db.commit()
 
-    return {"message": f"Agent '{agent.name}' was deactivated successfully"}
+    return {
+        "message": f"Agent '{agent.name}' was deactivated successfully"
+    }
+
+@app.patch("/agents/{agent_id}/activate")
+def activate_agent(agent_id: int, db: Session = Depends(get_db)):
+    agent = db.query(Agent).filter(Agent.id == agent_id).first()
+
+    if not agent:
+        raise HTTPException(
+            status_code=404,
+            detail="Agent not found"
+        )
+
+    agent.active = True
+
+    db.query(AgentLink).filter(
+        or_(
+            AgentLink.supervisor_agent_id == agent.id,
+            AgentLink.child_agent_id == agent.id
+        )
+    ).update({"active": True}, synchronize_session=False)
+
+    db.add(agent)
+    db.commit()
+    db.refresh(agent)
+
+    return {"message": f"Agent '{agent.name}' was activated successfully"}
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(payload: ChatRequest, db: Session = Depends(get_db)):

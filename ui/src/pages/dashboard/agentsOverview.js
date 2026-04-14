@@ -45,7 +45,7 @@ const AgentsOverview = () => {
                         <th>Docs path</th>
                         <th>Prompt</th>
                         <th>Type</th>
-                        <th>Active</th>
+                        <th>Status</th>
                         <th>Connected Agents</th>
                     </tr>
                     </thead>
@@ -58,7 +58,9 @@ const AgentsOverview = () => {
                             <td>{agent.docs_path}</td>
                             <td>{agent.prompt}</td>
                             <td>{agent.agent_type}</td>
-                            <td>{agent.active ? "Active" : "Inactive"}</td>
+                            <td style={{color: agent.active ? "green" : "red"}}>
+                                {agent.active ? "Active" : "Inactive"}
+                            </td>
                             <td>{agent.connected_agent_ids?.join(", ")}</td>
                         </tr>
                     ))}
