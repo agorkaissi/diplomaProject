@@ -49,7 +49,7 @@ diplomaProject/
 │       └── pages/
 │       │   ├── dashboard/
 │       │   │   ├── agentsOverview.js
-│       │   │   └── agents.js
+│       │   │   └── agentsConfiguration.js
 │       │   │ 
 │       │   ├── AiAssistant.js
 │       │   ├── Dashboard.js

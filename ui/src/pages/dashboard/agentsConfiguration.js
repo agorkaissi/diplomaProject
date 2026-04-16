@@ -18,11 +18,39 @@ const AgentsConfiguration = () => {
         connected_agent_ids: []
     });
 
+    const resetForm = () => ({
+        name: "",
+        description: "",
+        docs_path: "",
+        prompt: "",
+        agent_type: "specialist",
+        active: true,
+        connected_agent_ids: []
+    });
+
+    const loadAgentToForm = (agent) => {
+        setFormData({
+            name: agent.name || "",
+            description: agent.description || "",
+            docs_path: agent.docs_path || "",
+            prompt: agent.prompt || "",
+            agent_type: agent.agent_type || "specialist",
+            active: agent.active ?? true,
+            connected_agent_ids: agent.connected_agent_ids || []
+        });
+    };
+
+
     useEffect(() => {
         fetch("/agents")
             .then(res => res.json())
             .then(data => setAgents(data));
     }, []);
+
+    const clearAll = () => {
+        setFormData(resetForm());
+        setSelectedAgentId(null);
+    };
 
     const createAgent = async () => {
         try {
@@ -94,6 +122,46 @@ const AgentsConfiguration = () => {
         }
     };
 
+    const updateAgent = async () => {
+        if (!selectedAgentId) return;
+
+        try {
+            const res = await fetch(`/agents/${selectedAgentId}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    name: formData.name,
+                    description: formData.description,
+                    prompt: formData.prompt
+                }),
+            });
+
+            if (!res.ok) {
+                const error = await res.json();
+                alert(error.detail);
+                return;
+            }
+
+            setAgents(prev =>
+                prev.map(a =>
+                    a.id === selectedAgentId
+                        ? {...a, ...formData}
+                        : a
+                )
+            );
+
+            setMode(null);
+            setSelectedAgentId(null);
+
+        } catch (err) {
+            console.error(err);
+            alert("Error updating agent");
+        }
+    };
+
+
     return (
         <div className="container_main">
             <div className="dashboard_view_2">
@@ -106,18 +174,105 @@ const AgentsConfiguration = () => {
                 <div className="button-group">
                     <button
                         className="button button-black button-outline"
-                        onClick={() => setMode("create")}
+                        onClick={() => {
+                            clearAll();
+                            setSelectedAgentId(null);
+                            setMode("create");
+                        }}
+
                     >
                         Add
                     </button>
-                    <button className="button button-black button-outline">Edit</button>
                     <button
                         className="button button-black button-outline"
-                        onClick={() => setMode("deactivate")}
+                        onClick={() => {
+                            clearAll();
+                            setMode("edit")
+                        }}
+                    >
+                        Edit
+                    </button>
+                    <button
+                        className="button button-black button-outline"
+                        onClick={() => {
+                            clearAll();
+                            setMode("deactivate")
+                        }}
                     >
                         Toggle Status
                     </button>
                 </div>
+
+                {mode === "edit" && (
+                    <div className="inline-form">
+                        <h4>Edit Agent</h4>
+
+                        <select
+                            value={selectedAgentId || ""}
+                            onChange={(e) => {
+                                const id = Number(e.target.value);
+                                setSelectedAgentId(id);
+
+                                const agent = agents.find(a => a.id === id);
+                                if (agent) loadAgentToForm(agent);
+                            }}
+                        >
+                            <option value="">Select agent</option>
+                            {agents.map(agent => (
+                                <option key={agent.id} value={agent.id}>
+                                    {agent.name}
+                                </option>
+                            ))}
+                        </select>
+
+
+                        {selectedAgentId && (
+                            <>
+                                <input
+                                    placeholder="Name"
+                                    value={formData.name}
+                                    onChange={(e) =>
+                                        setFormData({...formData, name: e.target.value})
+                                    }
+                                />
+                                <input
+                                    placeholder="Description"
+                                    value={formData.description}
+                                    onChange={(e) =>
+                                        setFormData({...formData, description: e.target.value})
+                                    }
+                                />
+                                <textarea
+                                    placeholder="Prompt"
+                                    value={formData.prompt}
+                                    onChange={(e) =>
+                                        setFormData({...formData, prompt: e.target.value})
+                                    }
+                                />
+
+                                <div className="form-actions">
+                                    <button
+                                        className="button button-black"
+                                        onClick={updateAgent}
+                                    >
+                                        Save Changes
+                                    </button>
+
+                                    <button
+                                        className="button button-outline"
+                                        onClick={() => {
+                                            clearAll();
+                                            setMode(null);
+                                            setSelectedAgentId(null);
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                )}
 
                 {mode === "create" && (
                     <div className="inline-form">

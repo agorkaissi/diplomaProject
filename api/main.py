@@ -7,7 +7,7 @@ from db import Base, engine, get_db
 from router import route_with_langgraph
 from runtime import run_agent
 from models import Agent, AgentLink
-from schemas import AgentCreate, AgentResponse, ChatRequest, ChatResponse
+from schemas import AgentCreate, AgentResponse, AgentUpdateSafe, ChatRequest, ChatResponse
 import models
 import logging
 
@@ -196,6 +196,34 @@ def activate_agent(agent_id: int, db: Session = Depends(get_db)):
     db.refresh(agent)
 
     return {"message": f"Agent '{agent.name}' was activated successfully"}
+
+@app.patch("/agents/{agent_id}")
+def update_agent(agent_id: int, data: AgentUpdateSafe, db: Session = Depends(get_db)):
+    agent = db.query(Agent).filter(Agent.id == agent_id).first()
+
+    if not agent:
+        raise HTTPException(
+            status_code=404,
+            detail="Agent not found"
+        )
+
+    agent.name = data.name
+    agent.description = data.description
+    agent.prompt = data.prompt
+
+    db.add(agent)
+    db.commit()
+    db.refresh(agent)
+
+    return {
+        "message": f"Agent '{agent.name}' updated successfully",
+        "agent": {
+            "id": agent.id,
+            "name": agent.name,
+            "description": agent.description,
+            "prompt": agent.prompt
+        }
+    }
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(payload: ChatRequest, db: Session = Depends(get_db)):

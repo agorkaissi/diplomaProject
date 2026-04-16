@@ -20,6 +20,11 @@ class AgentUpdate(BaseModel):
     active: Optional[bool] = None
     connected_agent_ids: Optional[list[int]]= None
 
+class AgentUpdateSafe(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    description: str = Field(max_length=500)
+    prompt: str = Field(max_length=2000)
+
 class AgentResponse(BaseModel):
     id: int
     name: str
