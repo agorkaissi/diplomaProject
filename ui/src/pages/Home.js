@@ -78,12 +78,13 @@ const Home = () => {
                 <summary>Technology stack</summary>
                 <p>
                     <ul>
+                        <li>Backend: FastAPI + Uvicorn</li>
                         <li>Frontend: React</li>
-                        <li>Backend: Python (FastAPI)</li>
-                        <li>LLM:</li>
-                        <li>RAG: LangChain</li>
-                        <li>Vector DB:</li>
-                        <li>Database: PostgreSQL</li>
+                        <li>Runtime: Node.js (frontend), Python 3.12 (backend)</li>
+                        <li>AI / Agents: LangGraph + LangChain + Ollama (local LLM)</li>
+                        <li>Database: SQLAlchemy (RDBMS)</li>
+                        <li>Validation: Pydantic</li>
+                        <li>Architecture: async, multi-agent system</li>
                     </ul>
 
                 </p>

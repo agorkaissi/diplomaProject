@@ -19,17 +19,40 @@ const Dashboard = () => {
                 </div>
 
                 <div className="tile">
-                    <h5>Chat</h5>
                     <h5>Logs</h5>
+                    <h5 style={{ color: '#e63946' }}>Not implemented</h5>
                 </div>
 
-                <div className="tile">Monitoring</div>
-                <div className="tile">Performance</div>
-                <div className="tile">FunctionA</div>
+                <div className="tile">
+                    <h5>Live status</h5>
+                    <h5 style={{ color: '#e63946' }}>Not implemented</h5>
+                </div>
 
-                <div className="tile">FunctionB</div>
-                <div className="tile">FunctionC</div>
-                <div className="tile">FunctionD</div>
+                <div className="tile">
+                    <h5>Performance</h5>
+                    <h5 style={{ color: '#e63946' }}>Not implemented</h5>
+                </div>
+
+                <div className="tile">
+                    <h5>Permissions</h5>
+                    <h5 style={{ color: '#e63946' }}>Not implemented</h5>
+                </div>
+
+                <div className="tile">
+                    <h5>FunctionB</h5>
+                    <h5 style={{ color: '#e63946' }}>Not implemented</h5>
+                </div>
+
+                <div className="tile">
+                    <h5>FunctionC</h5>
+                    <h5 style={{ color: '#e63946' }}>Not implemented</h5>
+                </div>
+
+                <div className="tile">
+                    <h5>FunctionD</h5>
+                    <h5 style={{ color: '#e63946' }}>Not implemented</h5>
+                </div>
+
             </div>
         </div>
     );
