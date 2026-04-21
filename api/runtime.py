@@ -3,31 +3,7 @@ from sqlalchemy.orm import Session
 from models import Agent, AgentLink
 from ollama_client import generate_answer
 from prompts.builders import build_specialist_prompt, build_supervisor_prompt
-from retrieval.loader import load_documents
-
-
-def retrieve_relevant_documents(
-    question: str,
-    documents: list[tuple[str, str]],
-    top_k: int = 2,
-) -> list[tuple[str, str]]:
-    question_words = set(question.lower().split())
-    scored_documents: list[tuple[int, str, str]] = []
-
-    for file_name, content in documents:
-        content_lower = content.lower()
-        score = sum(1 for word in question_words if word in content_lower)
-        if score > 0:
-            scored_documents.append((score, file_name, content))
-
-    if not scored_documents:
-        scored_documents = [(0, name, content) for name, content in documents[:top_k]]
-
-    scored_documents.sort(key=lambda item: item[0], reverse=True)
-    return [
-        (file_name, content)
-        for score, file_name, content in scored_documents[:top_k]
-    ]
+from retrieval.retriever import retrieve_documents_for_folder
 
 
 def is_unknown_answer(answer: str) -> bool:
@@ -39,8 +15,11 @@ def is_unknown_answer(answer: str) -> bool:
 
 
 def run_specialist_agent(question: str, agent) -> tuple[str, list[str]]:
-    documents = load_documents(agent.docs_path)
-    relevant_documents = retrieve_relevant_documents(question, documents)
+    relevant_documents = retrieve_documents_for_folder(
+        question=question,
+        folder=agent.docs_path,
+        top_k=2,
+    )
 
     if not relevant_documents:
         return "I don't know based on the provided documents", []
@@ -171,8 +150,11 @@ def run_agent(question: str, agent: Agent, db: Session) -> tuple[str, list[str]]
 
 
 def run_specialist_retrieval_only(question: str, agent) -> tuple[str, list[str]]:
-    documents = load_documents(agent.docs_path)
-    relevant_documents = retrieve_relevant_documents(question, documents)
+    relevant_documents = retrieve_documents_for_folder(
+        question=question,
+        folder=agent.docs_path,
+        top_k=2,
+    )
 
     if not relevant_documents:
         return "", []
