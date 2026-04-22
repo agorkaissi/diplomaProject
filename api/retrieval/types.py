@@ -1,12 +1,29 @@
-from typing import TypeAlias
+from dataclasses import dataclass
+from typing import Optional
 
 
-DocumentName: TypeAlias = str
-DocumentContent: TypeAlias = str
+@dataclass(frozen=True)
+class SourceDocument:
+    document_id: str
+    source_file: str
+    content: str
+    docs_path: str
+    agent_name: Optional[str] = None
 
-LoadedDocument: TypeAlias = tuple[DocumentName, DocumentContent]
-LoadedDocuments: TypeAlias = list[LoadedDocument]
 
-DocumentScore: TypeAlias = int
-ScoredDocument: TypeAlias = tuple[DocumentScore, DocumentName, DocumentContent]
-ScoredDocuments: TypeAlias = list[ScoredDocument]
+@dataclass(frozen=True)
+class DocumentChunk:
+    chunk_id: str
+    document_id: str
+    source_file: str
+    docs_path: str
+    content: str
+    start_char: int
+    end_char: int
+    agent_name: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class RetrievedChunk:
+    chunk: DocumentChunk
+    score: int

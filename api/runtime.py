@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from models import Agent, AgentLink
 from ollama_client import generate_answer
 from prompts.builders import build_specialist_prompt, build_supervisor_prompt
-from retrieval.retriever import retrieve_documents_for_folder
+from retrieval.retriever import retrieve_chunks_for_folder
 
 
 def is_unknown_answer(answer: str) -> bool:
@@ -14,19 +14,38 @@ def is_unknown_answer(answer: str) -> bool:
     )
 
 
+def _unique_sources_from_chunks(sources: list[str]) -> list[str]:
+    seen: set[str] = set()
+    unique_sources: list[str] = []
+
+    for source in sources:
+        if source not in seen:
+            seen.add(source)
+            unique_sources.append(source)
+
+    return unique_sources
+
+
 def run_specialist_agent(question: str, agent) -> tuple[str, list[str]]:
-    relevant_documents = retrieve_documents_for_folder(
+    relevant_chunks = retrieve_chunks_for_folder(
         question=question,
         folder=agent.docs_path,
-        top_k=2,
+        top_k=3,
+        agent_name=agent.name,
     )
 
-    if not relevant_documents:
+    if not relevant_chunks:
         return "I don't know based on the provided documents", []
 
     context = "\n\n---\n\n".join(
-        f"[{file_name}]\n{content[:800]}"
-        for file_name, content in relevant_documents
+        (
+            f"[source: {item.chunk.source_file} | "
+            f"chunk: {item.chunk.chunk_id} | "
+            f"chars: {item.chunk.start_char}-{item.chunk.end_char} | "
+            f"score: {item.score}]\n"
+            f"{item.chunk.content}"
+        )
+        for item in relevant_chunks
     )
 
     prompt = build_specialist_prompt(
@@ -36,7 +55,9 @@ def run_specialist_agent(question: str, agent) -> tuple[str, list[str]]:
     )
 
     answer = generate_answer(prompt)
-    sources = [file_name for file_name, _ in relevant_documents]
+    sources = _unique_sources_from_chunks(
+        [item.chunk.source_file for item in relevant_chunks]
+    )
     return answer, sources
 
 
@@ -109,8 +130,9 @@ def run_supervisor_agent(
             agent=child,
         )
 
-        useful_child_answers.append(f"[{child.name}]\n{context}")
-        collected_sources.extend([f"{child.name}:{s}" for s in sources])
+        if context.strip():
+            useful_child_answers.append(f"[{child.name}]\n{context}")
+            collected_sources.extend([f"{child.name}:{s}" for s in sources])
 
     if not useful_child_answers:
         return "I don't know based on the provided agent answers.", []
@@ -150,20 +172,29 @@ def run_agent(question: str, agent: Agent, db: Session) -> tuple[str, list[str]]
 
 
 def run_specialist_retrieval_only(question: str, agent) -> tuple[str, list[str]]:
-    relevant_documents = retrieve_documents_for_folder(
+    relevant_chunks = retrieve_chunks_for_folder(
         question=question,
         folder=agent.docs_path,
-        top_k=2,
+        top_k=3,
+        agent_name=agent.name,
     )
 
-    if not relevant_documents:
+    if not relevant_chunks:
         return "", []
 
     context = "\n\n---\n\n".join(
-        f"[source: {file_name}]\n{content}"
-        for file_name, content in relevant_documents
+        (
+            f"[source: {item.chunk.source_file} | "
+            f"chunk: {item.chunk.chunk_id} | "
+            f"chars: {item.chunk.start_char}-{item.chunk.end_char} | "
+            f"score: {item.score}]\n"
+            f"{item.chunk.content}"
+        )
+        for item in relevant_chunks
     )
 
-    sources = [file_name for file_name, _ in relevant_documents]
+    sources = _unique_sources_from_chunks(
+        [item.chunk.source_file for item in relevant_chunks]
+    )
 
     return context, sources

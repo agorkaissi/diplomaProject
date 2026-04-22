@@ -1,21 +1,17 @@
 from pathlib import Path
 
-from retrieval.types import LoadedDocuments
 
-DOCUMENT_CACHE: dict[str, LoadedDocuments] = {}
+def load_documents(folder: str) -> list[tuple[str, str]]:
+    docs_path = Path(folder)
 
+    if not docs_path.exists() or not docs_path.is_dir():
+        return []
 
-def load_documents(folder: str) -> LoadedDocuments:
-    if folder in DOCUMENT_CACHE:
-        return DOCUMENT_CACHE[folder]
+    documents: list[tuple[str, str]] = []
 
-    path = Path(folder)
-    path.mkdir(parents=True, exist_ok=True)
+    for file_path in sorted(docs_path.glob("*.txt")):
+        content = file_path.read_text(encoding="utf-8").strip()
+        if content:
+            documents.append((file_path.name, content))
 
-    documents: LoadedDocuments = []
-    for file in path.glob("*.txt"):
-        content = file.read_text(encoding="utf-8", errors="ignore")
-        documents.append((file.name, content))
-
-    DOCUMENT_CACHE[folder] = documents
     return documents
