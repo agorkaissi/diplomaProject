@@ -1,121 +1,65 @@
-# =========================================================
-# FastAPI / Multi-RAG test file
-# Daily test version for existing database
-# Database already contains agents, so NO POST /agents here
-# =========================================================
+## =========================================================
+## FastAPI / Multi-RAG test file
+## Tests for ETAP 4: per-agent RAG + semantic retrieval
+## Assumes database already contains agents
+## Endpoint: POST /chat
+## =========================================================
 
-### Healthcheck
-GET http://127.0.0.1:8000/healthcheck
-Accept: application/json
 
-###
 
-### List all agents
-GET http://127.0.0.1:8000/agents
-Accept: application/json
+## =========================================================
+## FastAPI / Multi-RAG test file
+## Real agent names based on current DB
+## =========================================================
 
-###
-
-### Chat test - specialist: hr
 POST http://127.0.0.1:8000/chat
 Content-Type: application/json
-Accept: application/json
-
-{
-  "question": "How many vacation days does each worker need to have?",
-  "selected_agent": "hr"
-}
-
-###
-
-### Chat test - specialist: HarryPotter
-POST http://127.0.0.1:8000/chat
-Content-Type: application/json
-Accept: application/json
-
-{
-  "question": "What are the four houses called?",
-  "selected_agent": "HarryPotter"
-}
-
-###
-
-### Chat test - specialist: Frodo
-POST http://127.0.0.1:8000/chat
-Content-Type: application/json
-Accept: application/json
 
 {
   "question": "Who is Frodo?",
-  "selected_agent": "Frodo"
-}
-
-###
-
-### Chat test - specialist: ksRobak
-POST http://127.0.0.1:8000/chat
-Content-Type: application/json
-Accept: application/json
-
-{
-  "question": "What do you know about Pan Tadeusz?",
-  "selected_agent": "ksRobak"
-}
-
-###
-
-### Chat test - specialist: Ron
-POST http://127.0.0.1:8000/chat
-Content-Type: application/json
-Accept: application/json
-
-{
-  "question": "What are the four houses called?",
-  "selected_agent": "Ron"
-}
-
-###
-
-### Chat test - supervisor: Czytelnik
-### Connected agents: HarryPotter (2), Frodo (3)
-POST http://127.0.0.1:8000/chat
-Content-Type: application/json
-Accept: application/json
-
-{
-  "question": "What are the four houses called?",
-  "selected_agent": "Czytelnik"
-}
-
-###
-
-### Chat test - supervisor: Czytelnik2
-### Connected agents: hr (1), ksRobak (5)
-POST http://127.0.0.1:8000/chat
-Content-Type: application/json
-Accept: application/json
-
-{
-  "question": "What does each connected agent know?",
   "selected_agent": "Czytelnik2"
 }
 
 ###
 
-### Chat test - supervisor: Test22
-### Connected agents: HarryPotter (2), Ron (7)
 POST http://127.0.0.1:8000/chat
 Content-Type: application/json
-Accept: application/json
 
 {
-  "question": "What are the four houses called?",
-  "selected_agent": "Test22"
+  "question": "Who is Harry Potter?",
+  "selected_agent": "Frodo"
 }
 
 ###
 
-### Quick smoke test - hr
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+
+{
+  "question": "Who is Frodo?",
+  "selected_agent": "Czytelnik2"
+}
+
+
+
+### HEALTHCHECK
+GET http://127.0.0.1:8000/healthcheck
+Accept: application/json
+
+###
+
+### LIST ALL AGENTS
+GET http://127.0.0.1:8000/agents
+Accept: application/json
+
+###
+
+## =========================================================
+## HR AGENT
+## Real name in DB: hr
+## =========================================================
+
+### TEST 1 — HR / baseline exact question
 POST http://127.0.0.1:8000/chat
 Content-Type: application/json
 Accept: application/json
@@ -127,7 +71,127 @@ Accept: application/json
 
 ###
 
-### Quick smoke test - HarryPotter
+### TEST 2 — HR / semantic paraphrase
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "What information can you answer from your documents?",
+  "selected_agent": "hr"
+}
+
+###
+
+### TEST 3 — HR / known fact from policy
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "How many days of holiday does each worker have?",
+  "selected_agent": "hr"
+}
+
+###
+
+### TEST 4 — HR / out-of-domain isolation check
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "Who is Frodo?",
+  "selected_agent": "hr"
+}
+
+###
+
+## =========================================================
+## LOTR AGENT
+## Real name in DB: Frodo
+## docs_path: data/lotr
+## =========================================================
+
+### TEST 5 — LOTR / baseline exact question
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "Who is Frodo?",
+  "selected_agent": "Frodo"
+}
+
+###
+
+### TEST 6 — LOTR / semantic paraphrase 1
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "Which character carries the ring?",
+  "selected_agent": "Frodo"
+}
+
+###
+
+### TEST 7 — LOTR / semantic paraphrase 2
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "Who was responsible for taking the Ring to Mordor?",
+  "selected_agent": "Frodo"
+}
+
+###
+
+### TEST 8 — LOTR / another exact-domain question
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "Who is Gandalf?",
+  "selected_agent": "Frodo"
+}
+
+###
+
+### TEST 9 — LOTR / out-of-domain isolation check
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "Who is Harry Potter?",
+  "selected_agent": "Frodo"
+}
+
+###
+
+### TEST 10 — LOTR / completely unrelated question
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "What is the capital of France?",
+  "selected_agent": "Frodo"
+}
+
+###
+
+## =========================================================
+## HARRY POTTER AGENT
+## Real name in DB: HarryPotter
+## docs_path: data/hogwart
+## =========================================================
+
+### TEST 11 — HarryPotter / baseline exact question
 POST http://127.0.0.1:8000/chat
 Content-Type: application/json
 Accept: application/json
@@ -139,12 +203,347 @@ Accept: application/json
 
 ###
 
-### Quick smoke test - Frodo
+### TEST 12 — HarryPotter / semantic paraphrase
 POST http://127.0.0.1:8000/chat
 Content-Type: application/json
 Accept: application/json
 
 {
-  "question": "Who is Frodo Baggins?",
-  "selected_agent": "Frodo"
+  "question": "Which wizard is known as the boy who lived?",
+  "selected_agent": "HarryPotter"
 }
+
+###
+
+### TEST 13 — HarryPotter / isolation check
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "Who is Frodo?",
+  "selected_agent": "HarryPotter"
+}
+
+###
+
+## =========================================================
+## SECOND HOGWART AGENT
+## Real name in DB: Ron
+## docs_path: data/hogwart
+## =========================================================
+
+### TEST 14 — Ron / question about Harry Potter universe
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "Who is Harry Potter?",
+  "selected_agent": "Ron"
+}
+
+###
+
+## =========================================================
+## PAN TADEUSZ AGENT
+## Real name in DB: ksRobak
+## docs_path: data/PanTadeusz
+## =========================================================
+
+### TEST 15 — ksRobak / baseline domain test
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "Who is ks Robak?",
+  "selected_agent": "ksRobak"
+}
+
+###
+
+### TEST 16 — ksRobak / isolation check
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "Who is Frodo?",
+  "selected_agent": "ksRobak"
+}
+
+###
+
+## =========================================================
+## SUPERVISOR AGENT 1
+## Real name in DB: Czytelnik
+## Connected agents: HarryPotter (2), Frodo (3)
+## =========================================================
+
+### TEST 17 — Czytelnik / supervisor with Harry Potter question
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "Who is Harry Potter?",
+  "selected_agent": "Czytelnik"
+}
+
+###
+
+### TEST 18 — Czytelnik / supervisor with LOTR question
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "Who is Frodo?",
+  "selected_agent": "Czytelnik"
+}
+
+###
+
+### TEST 19 — Czytelnik / semantic paraphrase across child agents
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "Which character carries the ring?",
+  "selected_agent": "Czytelnik"
+}
+
+###
+
+### TEST 20 — Czytelnik / out-of-scope question
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "What is the capital of France?",
+  "selected_agent": "Czytelnik"
+}
+
+###
+
+## =========================================================
+## SUPERVISOR AGENT 2
+## Real name in DB: Czytelnik2
+## Connected agents: hr (1), ksRobak (5)
+## =========================================================
+
+### TEST 21 — Czytelnik2 / HR-side question
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "How many days of holiday does each worker have?",
+  "selected_agent": "Czytelnik2"
+}
+
+###
+
+### TEST 22 — Czytelnik2 / Pan Tadeusz-side question
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "Who is ks Robak?",
+  "selected_agent": "Czytelnik2"
+}
+
+###
+
+### TEST 23 — Czytelnik2 / mixed unknown-domain question
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "Who is Frodo?",
+  "selected_agent": "Czytelnik2"
+}
+
+###
+
+## =========================================================
+## SUPERVISOR AGENT 3
+## Real name in DB: Test22
+## Connected agents: HarryPotter (2), Ron (7)
+## =========================================================
+
+### TEST 24 — Test22 / Harry Potter universe question
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "Who is Harry Potter?",
+  "selected_agent": "Test22"
+}
+
+###
+
+### TEST 25 — Test22 / semantic paraphrase in Harry Potter domain
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "Which wizard is known as the boy who lived?",
+  "selected_agent": "Test22"
+}
+### FastAPI / Multi-RAG test file
+### Daily test version for existing database
+### Database already contains agents, so NO POST /agents here
+### =========================================================
+##
+#### Healthcheck
+#GET http://127.0.0.1:8000/healthcheck
+#Accept: application/json
+#
+####
+#
+#### List all agents
+#GET http://127.0.0.1:8000/agents
+#Accept: application/json
+#
+####
+#
+#### Chat test - specialist: hr
+#POST http://127.0.0.1:8000/chat
+#Content-Type: application/json
+#Accept: application/json
+#
+#{
+#  "question": "How many vacation days does each worker need to have?",
+#  "selected_agent": "hr"
+#}
+#
+####
+#
+#### Chat test - specialist: HarryPotter
+#POST http://127.0.0.1:8000/chat
+#Content-Type: application/json
+#Accept: application/json
+#
+#{
+#  "question": "What are the four houses called?",
+#  "selected_agent": "HarryPotter"
+#}
+#
+####
+#
+#### Chat test - specialist: Frodo
+#POST http://127.0.0.1:8000/chat
+#Content-Type: application/json
+#Accept: application/json
+#
+#{
+#  "question": "Who is Frodo?",
+#  "selected_agent": "Frodo"
+#}
+#
+####
+#
+#### Chat test - specialist: ksRobak
+#POST http://127.0.0.1:8000/chat
+#Content-Type: application/json
+#Accept: application/json
+#
+#{
+#  "question": "What do you know about Pan Tadeusz?",
+#  "selected_agent": "ksRobak"
+#}
+#
+####
+#
+#### Chat test - specialist: Ron
+#POST http://127.0.0.1:8000/chat
+#Content-Type: application/json
+#Accept: application/json
+#
+#{
+#  "question": "What are the four houses called?",
+#  "selected_agent": "Ron"
+#}
+#
+####
+#
+#### Chat test - supervisor: Czytelnik
+#### Connected agents: HarryPotter (2), Frodo (3)
+#POST http://127.0.0.1:8000/chat
+#Content-Type: application/json
+#Accept: application/json
+#
+#{
+#  "question": "What are the four houses called?",
+#  "selected_agent": "Czytelnik"
+#}
+#
+####
+#
+#### Chat test - supervisor: Czytelnik2
+#### Connected agents: hr (1), ksRobak (5)
+#POST http://127.0.0.1:8000/chat
+#Content-Type: application/json
+#Accept: application/json
+#
+#{
+#  "question": "What does each connected agent know?",
+#  "selected_agent": "Czytelnik2"
+#}
+#
+####
+#
+#### Chat test - supervisor: Test22
+#### Connected agents: HarryPotter (2), Ron (7)
+#POST http://127.0.0.1:8000/chat
+#Content-Type: application/json
+#Accept: application/json
+#
+#{
+#  "question": "What are the four houses called?",
+#  "selected_agent": "Test22"
+#}
+#
+####
+#
+#### Quick smoke test - hr
+#POST http://127.0.0.1:8000/chat
+#Content-Type: application/json
+#Accept: application/json
+#
+#{
+#  "question": "What does this agent know?",
+#  "selected_agent": "hr"
+#}
+#
+####
+#
+#### Quick smoke test - HarryPotter
+#POST http://127.0.0.1:8000/chat
+#Content-Type: application/json
+#Accept: application/json
+#
+#{
+#  "question": "Who is Harry Potter?",
+#  "selected_agent": "HarryPotter"
+#}
+#
+####
+#
+#### Quick smoke test - Frodo
+#POST http://127.0.0.1:8000/chat
+#Content-Type: application/json
+#Accept: application/json
+#
+#{
+#  "question": "Who is Frodo Baggins?",
+#  "selected_agent": "Frodo"
+#}

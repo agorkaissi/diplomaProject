@@ -1,20 +1,10 @@
-import re
-
 from retrieval.chunking import chunk_documents
+from retrieval.embeddings import cosine_similarity, embed_text, embed_texts
 from retrieval.loader import load_documents
 from retrieval.types import DocumentChunk, RetrievedChunk, SourceDocument
 
 DEFAULT_TOP_K = 3
-
-WORD_PATTERN = re.compile(r"\w+")
-
-
-def _tokenize(text: str) -> set[str]:
-    return {
-        token.lower()
-        for token in WORD_PATTERN.findall(text)
-        if len(token) > 1
-    }
+MIN_SIMILARITY_SCORE = 0.25
 
 
 def _build_source_documents(
@@ -42,38 +32,32 @@ def retrieve_relevant_chunks(
     question: str,
     chunks: list[DocumentChunk],
     top_k: int = DEFAULT_TOP_K,
+    min_score: float = MIN_SIMILARITY_SCORE,
 ) -> list[RetrievedChunk]:
-    question_words = _tokenize(question)
-
     if not chunks:
         return []
 
-    scored_chunks: list[RetrievedChunk] = []
+    chunk_texts = [chunk.content for chunk in chunks]
 
-    for chunk in chunks:
-        chunk_words = _tokenize(chunk.content)
-        overlap_score = len(question_words.intersection(chunk_words))
+    question_embedding = embed_text(question)
+    chunk_embeddings = embed_texts(chunk_texts)
 
-        if overlap_score > 0:
-            scored_chunks.append(
-                RetrievedChunk(
-                    chunk=chunk,
-                    score=overlap_score,
-                )
-            )
+    similarity_scores = cosine_similarity(
+        query_embedding=question_embedding,
+        document_embeddings=chunk_embeddings,
+    )
 
-    if not scored_chunks:
-        fallback_chunks = chunks[:top_k]
-        return [
-            RetrievedChunk(chunk=chunk, score=0)
-            for chunk in fallback_chunks
-        ]
+    scored_chunks = [
+        RetrievedChunk(
+            chunk=chunk,
+            score=float(score),
+        )
+        for chunk, score in zip(chunks, similarity_scores)
+        if float(score) >= min_score
+    ]
 
     scored_chunks.sort(
-        key=lambda item: (
-            item.score,
-            -item.chunk.start_char,
-        ),
+        key=lambda item: item.score,
         reverse=True,
     )
 
@@ -87,6 +71,7 @@ def retrieve_chunks_for_folder(
     agent_name: str | None = None,
     chunk_size: int = 700,
     chunk_overlap: int = 120,
+    min_score: float = MIN_SIMILARITY_SCORE,
 ) -> list[RetrievedChunk]:
     source_documents = _build_source_documents(
         folder=folder,
@@ -109,4 +94,5 @@ def retrieve_chunks_for_folder(
         question=question,
         chunks=chunks,
         top_k=top_k,
+        min_score=min_score,
     )

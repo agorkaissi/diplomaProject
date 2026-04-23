@@ -26,4 +26,4 @@ class DocumentChunk:
 @dataclass(frozen=True)
 class RetrievedChunk:
     chunk: DocumentChunk
-    score: int
+    score: float

@@ -26,7 +26,7 @@ def _unique_sources_from_chunks(sources: list[str]) -> list[str]:
     return unique_sources
 
 
-def run_specialist_agent(question: str, agent) -> tuple[str, list[str]]:
+def run_specialist_agent(question: str, agent: Agent) -> tuple[str, list[str]]:
     relevant_chunks = retrieve_chunks_for_folder(
         question=question,
         folder=agent.docs_path,
@@ -42,7 +42,7 @@ def run_specialist_agent(question: str, agent) -> tuple[str, list[str]]:
             f"[source: {item.chunk.source_file} | "
             f"chunk: {item.chunk.chunk_id} | "
             f"chars: {item.chunk.start_char}-{item.chunk.end_char} | "
-            f"score: {item.score}]\n"
+            f"score: {item.score:.4f}]\n"
             f"{item.chunk.content}"
         )
         for item in relevant_chunks
@@ -59,6 +59,35 @@ def run_specialist_agent(question: str, agent) -> tuple[str, list[str]]:
         [item.chunk.source_file for item in relevant_chunks]
     )
     return answer, sources
+
+
+def run_specialist_retrieval_only(question: str, agent: Agent) -> tuple[str, list[str]]:
+    relevant_chunks = retrieve_chunks_for_folder(
+        question=question,
+        folder=agent.docs_path,
+        top_k=3,
+        agent_name=agent.name,
+    )
+
+    if not relevant_chunks:
+        return "", []
+
+    context = "\n\n---\n\n".join(
+        (
+            f"[source: {item.chunk.source_file} | "
+            f"chunk: {item.chunk.chunk_id} | "
+            f"chars: {item.chunk.start_char}-{item.chunk.end_char} | "
+            f"score: {item.score:.4f}]\n"
+            f"{item.chunk.content}"
+        )
+        for item in relevant_chunks
+    )
+
+    sources = _unique_sources_from_chunks(
+        [item.chunk.source_file for item in relevant_chunks]
+    )
+
+    return context, sources
 
 
 def run_supervisor_agent(
@@ -79,43 +108,16 @@ def run_supervisor_agent(
     if not links:
         return "No connected agents are configured for this supervisor", []
 
-    if len(links) == 1:
-        child = (
-            db.query(Agent)
-            .filter(
-                Agent.id == links[0].child_agent_id,
-                Agent.active.is_(True),
-            )
-            .first()
-        )
-
-        if not child:
-            return "Child agent not found", []
-
-        context, sources = run_specialist_retrieval_only(question, child)
-
-        if not context.strip() and not sources:
-            return "I don't know based on the provided agent answers.", []
-
-        prompt = build_supervisor_prompt(
-            agent_prompt=agent.prompt,
-            question=question,
-            child_answers=f"[{child.name}]\n{context}",
-        )
-
-        final_answer = generate_answer(prompt)
-        return final_answer, sources
-
     child_agents = (
         db.query(Agent)
         .filter(
-            Agent.id.in_([l.child_agent_id for l in links]),
+            Agent.id.in_([link.child_agent_id for link in links]),
             Agent.active.is_(True),
         )
         .all()
     )
 
-    child_map = {a.id: a for a in child_agents}
+    child_map = {child.id: child for child in child_agents}
 
     useful_child_answers: list[str] = []
     collected_sources: list[str] = []
@@ -132,7 +134,7 @@ def run_supervisor_agent(
 
         if context.strip():
             useful_child_answers.append(f"[{child.name}]\n{context}")
-            collected_sources.extend([f"{child.name}:{s}" for s in sources])
+            collected_sources.extend([f"{child.name}:{source}" for source in sources])
 
     if not useful_child_answers:
         return "I don't know based on the provided agent answers.", []
@@ -144,8 +146,9 @@ def run_supervisor_agent(
     )
 
     final_answer = generate_answer(prompt)
+    unique_sources = _unique_sources_from_chunks(collected_sources)
 
-    return final_answer, collected_sources
+    return final_answer, unique_sources
 
 
 def _run_agent(
@@ -160,41 +163,19 @@ def _run_agent(
             db=db,
         )
 
-    return run_specialist_agent(question=question, agent=agent)
+    return run_specialist_agent(
+        question=question,
+        agent=agent,
+    )
 
 
-def run_agent(question: str, agent: Agent, db: Session) -> tuple[str, list[str]]:
+def run_agent(
+    question: str,
+    agent: Agent,
+    db: Session,
+) -> tuple[str, list[str]]:
     return _run_agent(
         question=question,
         agent=agent,
         db=db,
     )
-
-
-def run_specialist_retrieval_only(question: str, agent) -> tuple[str, list[str]]:
-    relevant_chunks = retrieve_chunks_for_folder(
-        question=question,
-        folder=agent.docs_path,
-        top_k=3,
-        agent_name=agent.name,
-    )
-
-    if not relevant_chunks:
-        return "", []
-
-    context = "\n\n---\n\n".join(
-        (
-            f"[source: {item.chunk.source_file} | "
-            f"chunk: {item.chunk.chunk_id} | "
-            f"chars: {item.chunk.start_char}-{item.chunk.end_char} | "
-            f"score: {item.score}]\n"
-            f"{item.chunk.content}"
-        )
-        for item in relevant_chunks
-    )
-
-    sources = _unique_sources_from_chunks(
-        [item.chunk.source_file for item in relevant_chunks]
-    )
-
-    return context, sources

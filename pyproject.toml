@@ -31,4 +31,5 @@ dependencies = [
     "langchain-ollama>=1.1.0",
     "router>=0.1",
     "pip-check-reqs>=2.5.6",
+    "sentence-transformers>=5.4.1",
 ]
