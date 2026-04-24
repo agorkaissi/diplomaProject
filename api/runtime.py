@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from models import Agent, AgentLink
 from ollama_client import generate_answer
 from prompts.builders import build_specialist_prompt, build_supervisor_prompt
-from retrieval.retriever import retrieve_chunks_for_folder
+from api.retrieval.retriever import retrieve_chunks_for_folder
 
 
 def is_unknown_answer(answer: str) -> bool:

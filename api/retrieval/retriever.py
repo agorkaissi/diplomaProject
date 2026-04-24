@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from retrieval.chunking import chunk_documents
-from retrieval.loader import load_documents
-from retrieval.types import RetrievedChunk, SourceDocument
-from retrieval.vector_store import (
+from api.retrieval.chunking import chunk_documents
+from api.retrieval.loader import load_documents
+from api.retrieval.types import RetrievedChunk, SourceDocument
+from api.retrieval.vector_store import (
     DEFAULT_INDEXES_ROOT,
     get_agent_index_dir,
     index_exists,
@@ -37,20 +37,26 @@ def _build_source_documents(
     return source_documents
 
 
-def _build_and_save_index_for_folder(
+def build_index_for_folder(
     folder: str,
-    agent_name: str | None,
-    index_dir: Path,
-    chunk_size: int,
-    chunk_overlap: int,
-) -> None:
+    agent_name: str | None = None,
+    indexes_root: Path = DEFAULT_INDEXES_ROOT,
+    chunk_size: int = 700,
+    chunk_overlap: int = 120,
+) -> int:
+    index_dir = get_agent_index_dir(
+        docs_path=folder,
+        agent_name=agent_name,
+        indexes_root=indexes_root,
+    )
+
     source_documents = _build_source_documents(
         folder=folder,
         agent_name=agent_name,
     )
 
     if not source_documents:
-        return
+        return 0
 
     chunks = chunk_documents(
         documents=source_documents,
@@ -59,12 +65,14 @@ def _build_and_save_index_for_folder(
     )
 
     if not chunks:
-        return
+        return 0
 
     save_vector_index(
         chunks=chunks,
         index_dir=index_dir,
     )
+
+    return len(chunks)
 
 
 def retrieve_chunks_for_folder(
@@ -72,25 +80,13 @@ def retrieve_chunks_for_folder(
     folder: str,
     top_k: int = DEFAULT_TOP_K,
     agent_name: str | None = None,
-    chunk_size: int = 700,
-    chunk_overlap: int = 120,
     min_score: float = MIN_SIMILARITY_SCORE,
-    force_rebuild: bool = False,
 ) -> list[RetrievedChunk]:
     index_dir = get_agent_index_dir(
         docs_path=folder,
         agent_name=agent_name,
         indexes_root=DEFAULT_INDEXES_ROOT,
     )
-
-    if force_rebuild or not index_exists(index_dir):
-        _build_and_save_index_for_folder(
-            folder=folder,
-            agent_name=agent_name,
-            index_dir=index_dir,
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
-        )
 
     if not index_exists(index_dir):
         return []

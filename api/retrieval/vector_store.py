@@ -6,13 +6,12 @@ from typing import Any
 import faiss
 import numpy as np
 
-from retrieval.embeddings import DEFAULT_EMBEDDING_MODEL, embed_text, embed_texts
-from retrieval.types import DocumentChunk, RetrievedChunk
-
+from api.retrieval.embeddings import DEFAULT_EMBEDDING_MODEL, embed_text, embed_texts
+from api.retrieval.types import DocumentChunk, RetrievedChunk
 
 INDEX_FILE_NAME = "faiss.index"
 METADATA_FILE_NAME = "metadata.json"
-DEFAULT_INDEXES_ROOT = Path("indexes")
+DEFAULT_INDEXES_ROOT = Path(__file__).resolve().parents[1] / "indexes"
 DEFAULT_MIN_SCORE = 0.25
 
 
