@@ -1,7 +1,15 @@
+from pathlib import Path
+
 from retrieval.chunking import chunk_documents
-from retrieval.embeddings import cosine_similarity, embed_text, embed_texts
 from retrieval.loader import load_documents
-from retrieval.types import DocumentChunk, RetrievedChunk, SourceDocument
+from retrieval.types import RetrievedChunk, SourceDocument
+from retrieval.vector_store import (
+    DEFAULT_INDEXES_ROOT,
+    get_agent_index_dir,
+    index_exists,
+    save_vector_index,
+    search_vector_index,
+)
 
 DEFAULT_TOP_K = 3
 MIN_SIMILARITY_SCORE = 0.25
@@ -14,6 +22,7 @@ def _build_source_documents(
     loaded_documents = load_documents(folder)
 
     source_documents: list[SourceDocument] = []
+
     for file_name, content in loaded_documents:
         source_documents.append(
             SourceDocument(
@@ -28,40 +37,34 @@ def _build_source_documents(
     return source_documents
 
 
-def retrieve_relevant_chunks(
-    question: str,
-    chunks: list[DocumentChunk],
-    top_k: int = DEFAULT_TOP_K,
-    min_score: float = MIN_SIMILARITY_SCORE,
-) -> list[RetrievedChunk]:
+def _build_and_save_index_for_folder(
+    folder: str,
+    agent_name: str | None,
+    index_dir: Path,
+    chunk_size: int,
+    chunk_overlap: int,
+) -> None:
+    source_documents = _build_source_documents(
+        folder=folder,
+        agent_name=agent_name,
+    )
+
+    if not source_documents:
+        return
+
+    chunks = chunk_documents(
+        documents=source_documents,
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+    )
+
     if not chunks:
-        return []
+        return
 
-    chunk_texts = [chunk.content for chunk in chunks]
-
-    question_embedding = embed_text(question)
-    chunk_embeddings = embed_texts(chunk_texts)
-
-    similarity_scores = cosine_similarity(
-        query_embedding=question_embedding,
-        document_embeddings=chunk_embeddings,
+    save_vector_index(
+        chunks=chunks,
+        index_dir=index_dir,
     )
-
-    scored_chunks = [
-        RetrievedChunk(
-            chunk=chunk,
-            score=float(score),
-        )
-        for chunk, score in zip(chunks, similarity_scores)
-        if float(score) >= min_score
-    ]
-
-    scored_chunks.sort(
-        key=lambda item: item.score,
-        reverse=True,
-    )
-
-    return scored_chunks[:top_k]
 
 
 def retrieve_chunks_for_folder(
@@ -72,27 +75,29 @@ def retrieve_chunks_for_folder(
     chunk_size: int = 700,
     chunk_overlap: int = 120,
     min_score: float = MIN_SIMILARITY_SCORE,
+    force_rebuild: bool = False,
 ) -> list[RetrievedChunk]:
-    source_documents = _build_source_documents(
-        folder=folder,
+    index_dir = get_agent_index_dir(
+        docs_path=folder,
         agent_name=agent_name,
+        indexes_root=DEFAULT_INDEXES_ROOT,
     )
 
-    if not source_documents:
+    if force_rebuild or not index_exists(index_dir):
+        _build_and_save_index_for_folder(
+            folder=folder,
+            agent_name=agent_name,
+            index_dir=index_dir,
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+        )
+
+    if not index_exists(index_dir):
         return []
 
-    chunks = chunk_documents(
-        documents=source_documents,
-        chunk_size=chunk_size,
-        chunk_overlap=chunk_overlap,
-    )
-
-    if not chunks:
-        return []
-
-    return retrieve_relevant_chunks(
+    return search_vector_index(
         question=question,
-        chunks=chunks,
+        index_dir=index_dir,
         top_k=top_k,
         min_score=min_score,
     )

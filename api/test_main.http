@@ -4,13 +4,55 @@
 ## Assumes database already contains agents
 ## Endpoint: POST /chat
 ## =========================================================
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
 
+{
+  "question": "Who is Harry Potter?",
+  "selected_agent": "hogwart"
+}
 
+###
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
 
+{
+  "question": "Who is Frodo?",
+  "selected_agent": "lotr"
+}
+
+###
 ## =========================================================
 ## FastAPI / Multi-RAG test file
 ## Real agent names based on current DB
 ## =========================================================
+
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+
+{
+  "question": "What does this agent know?",
+  "selected_agent": "hr"
+}
+###
+
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+
+{
+  "question": "Who is Frodo?",
+  "selected_agent": "lotr"
+}
+###
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+
+{
+  "question": "Who is Harry Potter?",
+  "selected_agent": "hogwart"
+}
+
+###
 
 POST http://127.0.0.1:8000/chat
 Content-Type: application/json
