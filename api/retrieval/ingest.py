@@ -4,16 +4,14 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from retrieval.retriever import build_index_for_folder
+from retrieval.vector_store import DEFAULT_INDEXES_ROOT
 
 API_DIR = Path(__file__).resolve().parents[1]
 PROJECT_ROOT = API_DIR.parent
 
 if str(API_DIR) not in sys.path:
     sys.path.insert(0, str(API_DIR))
-
-from api.retrieval.retriever import build_index_for_folder
-from api.retrieval.vector_store import DEFAULT_INDEXES_ROOT
-
 
 @dataclass(frozen=True)
 class AgentConfig:

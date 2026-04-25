@@ -1,4 +1,4 @@
-from api.retrieval.types import DocumentChunk, SourceDocument
+from retrieval.types import DocumentChunk, SourceDocument
 
 DEFAULT_CHUNK_SIZE = 700
 DEFAULT_CHUNK_OVERLAP = 120

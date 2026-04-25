@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from api.retrieval.chunking import chunk_documents
-from api.retrieval.loader import load_documents
-from api.retrieval.types import RetrievedChunk, SourceDocument
-from api.retrieval.vector_store import (
+from retrieval.chunking import chunk_documents
+from retrieval.loader import load_documents
+from retrieval.types import RetrievedChunk, SourceDocument
+from retrieval.vector_store import (
     DEFAULT_INDEXES_ROOT,
     get_agent_index_dir,
     index_exists,

@@ -6,8 +6,8 @@ from typing import Any
 import faiss
 import numpy as np
 
-from api.retrieval.embeddings import DEFAULT_EMBEDDING_MODEL, embed_text, embed_texts
-from api.retrieval.types import DocumentChunk, RetrievedChunk
+from retrieval.embeddings import DEFAULT_EMBEDDING_MODEL, embed_text, embed_texts
+from retrieval.types import DocumentChunk, RetrievedChunk
 
 INDEX_FILE_NAME = "faiss.index"
 METADATA_FILE_NAME = "metadata.json"
