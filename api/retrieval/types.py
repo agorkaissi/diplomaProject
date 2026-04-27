@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 
@@ -27,3 +27,28 @@ class DocumentChunk:
 class RetrievedChunk:
     chunk: DocumentChunk
     score: float
+
+
+@dataclass(frozen=True)
+class AgentRetrievalResult:
+    agent_name: str
+    chunks: list[RetrievedChunk] = field(default_factory=list)
+    sources: list[str] = field(default_factory=list)
+    confidence: float = 0.0
+
+    @property
+    def has_context(self) -> bool:
+        return bool(self.chunks)
+
+
+@dataclass(frozen=True)
+class AgentRagAnswer:
+    agent_name: str
+    answer: str
+    chunks: list[RetrievedChunk] = field(default_factory=list)
+    sources: list[str] = field(default_factory=list)
+    confidence: float = 0.0
+
+    @property
+    def has_answer(self) -> bool:
+        return bool(self.answer.strip())

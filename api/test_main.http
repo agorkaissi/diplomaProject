@@ -4,6 +4,35 @@
 ## Assumes database already contains agents
 ## Endpoint: POST /chat
 ## =========================================================
+
+
+### Chat without selected agent - semantic router chooses specialist or supervisor
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+
+{
+  "question": "Jakie są zasady urlopu pracownika?"
+}
+
+### Chat with selected specialist
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+
+{
+  "question": "Kim był Frodo?",
+  "selected_agent": "lotr"
+}
+
+### Chat with possible multi-domain question
+POST http://127.0.0.1:8000/chat
+Content-Type: application/json
+
+{
+  "question": "Porównaj zasady organizacyjne HR z zasadami świata Hogwartu"
+}
+
+
+###
 POST http://127.0.0.1:8000/chat
 Content-Type: application/json
 

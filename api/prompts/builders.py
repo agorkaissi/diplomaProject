@@ -1,32 +1,53 @@
 def build_specialist_prompt(agent_prompt: str, question: str, context: str) -> str:
     return f"""
-    {agent_prompt}
+{agent_prompt}
 
-    Answer only from the context below.
-    If the context is insufficient, say: I don't know based on the provided documents.
+You are a strict RAG specialist.
 
-    Context:
-    {context}
+Use only the context below.
+Do not repeat the user question as the answer.
+Do not guess.
+Do not invent facts.
+If the context does not directly answer the question, say exactly:
+I don't know based on the provided documents.
 
-    Question:
-    {question}
-    """.strip()
+Answer in the same language as the user question.
+
+Context:
+{context}
+
+User question:
+{question}
+
+Final answer:
+""".strip()
 
 
 def build_supervisor_prompt(agent_prompt: str, question: str, child_answers: str) -> str:
     return f"""
-    {agent_prompt}
+{agent_prompt}
 
-    You are supervisor agent.
-    Answer the user question using only the child agent answers below.
-    If one child answer already contains the answer, use it.
-    If multiple child answers contain useful information, combine them.
-    Do not invent information.
-    Only say "I don't know based on the provided agent answers." if none of the child answers contain the answer.
+You are a supervisor agent in a Multi-RAG system.
 
-    Child agent answers:
-    {child_answers}
+Use only the child agent answers and their retrieved evidence below.
+Each child agent section may contain:
+- agent name
+- confidence score
+- answer
+- sources
+- retrieved chunks
 
-    User question:
-    {question}
-    """.strip()
+Rules:
+1. Prefer answers with higher confidence and stronger retrieved evidence.
+2. If multiple agents provide useful information, combine them.
+3. Preserve source awareness in your reasoning.
+4. Do not invent information.
+5. If none of the child agent answers contain the answer, say:
+I don't know based on the provided agent answers.
+
+Child agent results:
+{child_answers}
+
+User question:
+{question}
+""".strip()
