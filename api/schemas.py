@@ -38,10 +38,31 @@ class AgentResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class ChatRequest(BaseModel):
-    question: str = Field(...,min_length=1)
+    question: str = Field(..., min_length=1)
     selected_agent: Optional[str] = Field(default=None, min_length=1, max_length=100)
 
+
+class RetrievedChunkResponse(BaseModel):
+    agent: Optional[str] = None
+    source_file: str
+    chunk_id: str
+    score: float
+    start_char: int
+    end_char: int
+    content: str
+
+
+class ChatDebugResponse(BaseModel):
+    agent_type: str
+    retrieval_time_ms: float
+    generation_time_ms: float
+    total_time_ms: float
+    confidence: float
+    chunks: list[RetrievedChunkResponse] = Field(default_factory=list)
+
+
 class ChatResponse(BaseModel):
-    agent:str
-    answer:str
+    agent: str
+    answer: str
     sources: list[str]
+    debug: Optional[ChatDebugResponse] = None

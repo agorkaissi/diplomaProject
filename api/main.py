@@ -5,9 +5,17 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from db import Base, engine, get_db
 from router import route_with_langgraph
-from runtime import run_agent
+from runtime import run_agent_with_debug
 from models import Agent, AgentLink
-from schemas import AgentCreate, AgentResponse, AgentUpdateSafe, ChatRequest, ChatResponse
+from schemas import (
+    AgentCreate,
+    AgentResponse,
+    AgentUpdateSafe,
+    ChatRequest,
+    ChatResponse,
+    ChatDebugResponse,
+    RetrievedChunkResponse,
+)
 import models
 import logging
 
@@ -244,11 +252,30 @@ def chat(payload: ChatRequest, db: Session = Depends(get_db)):
             detail="Agent not found"
         )
 
-    answer, sources = run_agent(payload.question, agent, db)
+    answer, sources, debug = run_agent_with_debug(payload.question, agent, db)
 
     return ChatResponse(
         agent=agent.name,
         answer=answer,
         sources=sources,
+        debug=ChatDebugResponse(
+            agent_type=debug.agent_type,
+            retrieval_time_ms=debug.retrieval_time_ms,
+            generation_time_ms=debug.generation_time_ms,
+            total_time_ms=debug.total_time_ms,
+            confidence=debug.confidence,
+            chunks=[
+                RetrievedChunkResponse(
+                    agent=item.chunk.agent_name,
+                    source_file=item.chunk.source_file,
+                    chunk_id=item.chunk.chunk_id,
+                    score=round(item.score, 4),
+                    start_char=item.chunk.start_char,
+                    end_char=item.chunk.end_char,
+                    content=item.chunk.content,
+                )
+                for item in debug.chunks
+            ],
+        ),
     )
 

@@ -1,3 +1,5 @@
+import time
+from dataclasses import dataclass
 from sqlalchemy.orm import Session
 
 from models import Agent, AgentLink
@@ -8,6 +10,14 @@ from retrieval.types import AgentRagAnswer, AgentRetrievalResult, RetrievedChunk
 
 
 SPECIALIST_TOP_K = 3
+@dataclass(frozen=True)
+class RuntimeDebugInfo:
+    agent_type: str
+    retrieval_time_ms: float
+    generation_time_ms: float
+    total_time_ms: float
+    confidence: float
+    chunks: list[RetrievedChunk]
 
 
 def is_unknown_answer(answer: str) -> bool:
@@ -260,3 +270,76 @@ def run_agent(
         agent=agent,
         db=db,
     )
+
+def run_agent_with_debug(
+    question: str,
+    agent: Agent,
+    db: Session,
+) -> tuple[str, list[str], RuntimeDebugInfo]:
+    total_start = time.perf_counter()
+
+    if agent.agent_type == "supervisor":
+        generation_start = time.perf_counter()
+        answer, sources = run_supervisor_agent(
+            question=question,
+            agent=agent,
+            db=db,
+        )
+        generation_time_ms = round((time.perf_counter() - generation_start) * 1000, 2)
+        total_time_ms = round((time.perf_counter() - total_start) * 1000, 2)
+
+        debug = RuntimeDebugInfo(
+            agent_type="supervisor",
+            retrieval_time_ms=0.0,
+            generation_time_ms=generation_time_ms,
+            total_time_ms=total_time_ms,
+            confidence=0.0,
+            chunks=[],
+        )
+
+        return answer, sources, debug
+
+    retrieval_start = time.perf_counter()
+    retrieval_result = run_specialist_retrieval_only(
+        question=question,
+        agent=agent,
+    )
+    retrieval_time_ms = round((time.perf_counter() - retrieval_start) * 1000, 2)
+
+    if not retrieval_result.has_context:
+        total_time_ms = round((time.perf_counter() - total_start) * 1000, 2)
+
+        debug = RuntimeDebugInfo(
+            agent_type="specialist",
+            retrieval_time_ms=retrieval_time_ms,
+            generation_time_ms=0.0,
+            total_time_ms=total_time_ms,
+            confidence=0.0,
+            chunks=[],
+        )
+
+        return "I don't know based on the provided documents", [], debug
+
+    context = _format_retrieved_chunks(retrieval_result.chunks)
+
+    prompt = build_specialist_prompt(
+        agent_prompt=agent.prompt,
+        question=question,
+        context=context,
+    )
+
+    generation_start = time.perf_counter()
+    answer = generate_answer(prompt)
+    generation_time_ms = round((time.perf_counter() - generation_start) * 1000, 2)
+    total_time_ms = round((time.perf_counter() - total_start) * 1000, 2)
+
+    debug = RuntimeDebugInfo(
+        agent_type="specialist",
+        retrieval_time_ms=retrieval_time_ms,
+        generation_time_ms=generation_time_ms,
+        total_time_ms=total_time_ms,
+        confidence=retrieval_result.confidence,
+        chunks=retrieval_result.chunks,
+    )
+
+    return answer, retrieval_result.sources, debug
