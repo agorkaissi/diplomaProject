@@ -125,7 +125,15 @@ def run_specialist_rag_answer(
         context=context,
     )
 
+    print("\n========== SPECIALIST PROMPT ==========")
+    print(prompt)
+    print("========== END SPECIALIST PROMPT ==========\n")
+
     answer = generate_answer(prompt)
+
+    print("\n========== SPECIALIST ANSWER ==========")
+    print(answer)
+    print("========== END SPECIALIST ANSWER ==========\n")
 
     return AgentRagAnswer(
         agent_name=agent.name,
@@ -188,7 +196,12 @@ def run_supervisor_agent(
             agent=child,
         )
 
-        if child_result.has_answer and not is_unknown_answer(child_result.answer):
+        # 🔥 NOWY FILTER (KLUCZOWA ZMIANA)
+        if (
+            child_result.has_answer
+            and not is_unknown_answer(child_result.answer)
+            and child_result.confidence >= 0.45
+        ):
             useful_child_results.append(child_result)
             collected_sources.extend(
                 [f"{child_result.agent_name}:{source}" for source in child_result.sources]
