@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 from db import Base, engine
-from routers import agents, admin_ingest, chat, documents, metrics, system
+from routers import agents, admin_ingest, chat, documents, metrics, system, llm
 
 
 logging.basicConfig(
@@ -39,6 +39,7 @@ app.include_router(chat.router)
 app.include_router(documents.router)
 app.include_router(admin_ingest.router)
 app.include_router(metrics.router)
+app.include_router(llm.router)
 
 # from contextlib import asynccontextmanager
 # from pathlib import Path
