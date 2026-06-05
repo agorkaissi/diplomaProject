@@ -33,9 +33,9 @@ const Dashboard = () => {
                     <h5>status</h5>
                 </div>
 
-                <div className="tile">
-                    <h5>Permissions</h5>
-                    <h5 style={{ color: '#e63946' }}>Not implemented</h5>
+                <div className="tile" onClick={() => navigate("/ragPerformance")}>
+                    <h5>RAG</h5>
+                    <h5>Performance</h5>
                 </div>
 
 

@@ -10,6 +10,7 @@ import AgentsOverview from "./pages/dashboard/agentsOverview";
 import DocumentsManagement from "./pages/dashboard/documentsManagement";
 import LiveStatus from "./pages/dashboard/liveStatus";
 import LlmsStatus from "./pages/dashboard/llmsStatus";
+import RagPerformance from "./pages/dashboard/ragPerformance";
 
 const router = createBrowserRouter([
     {
@@ -50,6 +51,10 @@ const router = createBrowserRouter([
             {
                 path: "/llmsStatus",
                 element: <LlmsStatus/>
+            },
+            {
+                path: "/ragPerformance",
+                element: <RagPerformance/>
             }
         ]
     }

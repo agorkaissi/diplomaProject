@@ -15,7 +15,7 @@ const LiveStatus = () => {
     const [documents, setDocuments] = useState([]);
     const [loading2, setLoading2] = useState(true);
 
-    const [metrics, setMetrics] = useState([]);
+
 
     const checkBackend = async () => {
         const start = Date.now();
@@ -152,30 +152,7 @@ const LiveStatus = () => {
 
     const latestDocument = documents[0];
 
-    const fetchMetrics = async () => {
-        try {
-            const res = await fetch("http://localhost:8000/metrics/rag");
 
-            if (!res.ok) {
-                throw new Error("Failed to fetch metrics");
-            }
-
-            const data = await res.json();
-            setMetrics(data);
-
-        } catch (err) {
-            console.error("Metrics fetch error:", err);
-
-        }
-    };
-
-    useEffect(() => {
-        fetchMetrics();
-
-        const interval = setInterval(fetchMetrics, 10000);
-
-        return () => clearInterval(interval);
-    }, []);
 
     return (
         <div className="container_main">
@@ -258,38 +235,6 @@ const LiveStatus = () => {
                             </>
                         )}
                     </div>
-
-                    <div className="status-card">
-                        <h3>RAG Performance</h3>
-
-                        <>
-                            <p>
-                                <strong> AVG Retrieval time:</strong>{" "}
-                                {metrics.avg_retrieval_time_ms?.toFixed(0)} ms
-                            </p>
-
-                            <p>
-                                <strong> AVG Generation time:</strong>{" "}
-                                {metrics.avg_generation_time_ms?.toFixed(0)} ms
-                            </p>
-
-                            <p>
-                                <strong>AVG Total time:</strong>{" "}
-                                {metrics.avg_total_time_ms?.toFixed(0)} ms
-                            </p>
-
-                            <p>
-                                <strong>AVG Confidence:</strong>{" "}
-                                {(metrics.avg_confidence * 100)?.toFixed(1)} %
-                            </p>
-
-                            <p>
-                                <strong>Requests:</strong> {metrics.requests}
-                            </p>
-                        </>
-
-                    </div>
-
 
                 </div>
 
