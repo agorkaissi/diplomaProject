@@ -161,10 +161,26 @@ diplomaProject/
 │   │   ├── chunking.py
 │   │   ├── embeddings.py
 │   │   ├── ingest.py
+│   │   ├── ingest_service.py
 │   │   ├── reranker.py
 │   │   ├── retriever.py
 │   │   ├── types.py
 │   │   └── vector_store.py
+│   │
+│   ├── routers/
+│   │   ├── __init__.py
+│   │   ├── admin_ingest.py
+│   │   ├── agents.py
+│   │   ├── chat.py
+│   │   ├── documents.py
+│   │   ├── metrics.py
+│   │   └── system.py
+│   │
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── agent_service.py
+│   │   ├── document_service.py
+│   │   └── metrics_service.py
 │   │
 │   ├── agents.db
 │   ├── db.py
@@ -182,6 +198,7 @@ diplomaProject/
 │   └── src/
 │       ├── pages/
 │       │   ├── dashboard/
+│       │   │   └── documentsManagement.js
 │       │   ├── AiAssistant.js
 │       │   ├── Dashboard.js
 │       │   ├── Home.js
