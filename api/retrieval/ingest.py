@@ -7,6 +7,8 @@ from pathlib import Path
 from retrieval.retriever import build_index_for_folder
 from retrieval.vector_store import DEFAULT_INDEXES_ROOT
 
+from retrieval.chunking import DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_OVERLAP
+
 API_DIR = Path(__file__).resolve().parents[1]
 PROJECT_ROOT = API_DIR.parent
 
@@ -151,13 +153,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--chunk-size",
         type=int,
-        default=1200,
+        default=DEFAULT_CHUNK_SIZE,
         help="Chunk size in characters",
     )
     parser.add_argument(
         "--chunk-overlap",
         type=int,
-        default=200,
+        default=DEFAULT_CHUNK_OVERLAP,
         help="Chunk overlap in characters",
     )
 

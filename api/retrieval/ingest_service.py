@@ -5,10 +5,8 @@ from models import Agent
 from retrieval.ingest import resolve_docs_path
 from retrieval.retriever import build_index_for_folder
 from retrieval.vector_store import DEFAULT_INDEXES_ROOT
+from retrieval.chunking import DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_OVERLAP
 
-
-DEFAULT_CHUNK_SIZE = 700
-DEFAULT_CHUNK_OVERLAP = 120
 
 
 def ingest_agent(

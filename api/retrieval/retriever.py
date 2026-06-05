@@ -1,6 +1,10 @@
 from pathlib import Path
 
-from retrieval.chunking import chunk_documents
+from retrieval.chunking import (
+    chunk_documents,
+    DEFAULT_CHUNK_SIZE,
+    DEFAULT_CHUNK_OVERLAP,
+)
 from retrieval.loader import load_documents
 from retrieval.types import RetrievedChunk, SourceDocument
 from retrieval.vector_store import (
@@ -42,8 +46,8 @@ def build_index_for_folder(
     folder: str,
     agent_name: str | None = None,
     indexes_root: Path = DEFAULT_INDEXES_ROOT,
-    chunk_size: int = 700,
-    chunk_overlap: int = 120,
+    chunk_size: int = DEFAULT_CHUNK_SIZE,
+    chunk_overlap: int = DEFAULT_CHUNK_OVERLAP,
 ) -> int:
     index_dir = get_agent_index_dir(
         docs_path=folder,
