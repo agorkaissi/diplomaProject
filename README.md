@@ -198,7 +198,13 @@ diplomaProject/
 │   └── src/
 │       ├── pages/
 │       │   ├── dashboard/
-│       │   │   └── documentsManagement.js
+│       │   │   ├── agentsConfiguration.js
+│       │   │   ├── agentsOverview.js
+│       │   │   ├── documentsManagement.js
+│       │   │   ├── liveStatus.js
+│       │   │   ├── llmsStatus.js
+│       │   │   └── ragPerformance.js
+│       │   │ 
 │       │   ├── AiAssistant.js
 │       │   ├── Dashboard.js
 │       │   ├── Home.js
